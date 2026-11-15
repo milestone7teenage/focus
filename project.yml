@@ -34,9 +34,23 @@ targets:
         includes:
           - ContentView.swift
       - path: Domain
+        includes:
+          - ReminderState.swift
+          - CalendarPolicy.swift
+          - TaskSnapshot.swift
+          - SchemaV1.swift
       - path: Data
+        includes:
+          - OneTimeTask.swift
+          - RegularTaskTemplate.swift
+          - DailyTaskInstance.swift
+          - TaskRepository.swift
       - path: Services
-      - path: Design
+        includes:
+          - Scheduling.swift
+          - UndoService.swift
+          - TaskManager.swift
+          - ScheduleEngine.swift
     settings:
       base:
         PRODUCT_BUNDLE_IDENTIFIER: com.placeholder.focus
@@ -57,6 +71,9 @@ targets:
       - path: Tests
         includes:
           - FocusTests.swift
+          - TaskManagerTests.swift
+          - UndoServiceTests.swift
+          - ScheduleEngineTests.swift
     dependencies:
       - target: focus
     settings:
