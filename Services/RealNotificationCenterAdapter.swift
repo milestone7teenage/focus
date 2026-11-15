@@ -1,5 +1,5 @@
 import Foundation
-import UserNotifications
+@preconcurrency import UserNotifications
 
 /// Продакшен-адаптер над `UNUserNotificationCenter.current()`.
 public final class RealNotificationCenterAdapter: NotificationCenterAdapter {

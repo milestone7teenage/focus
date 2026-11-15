@@ -37,8 +37,8 @@ public enum DesignSystem {
     /// Заголовок карточки: body, weight .semibold, Dynamic Type.
     public static let taskTitleFont = Font.system(.body, design: .default).weight(.semibold)
 
-    /// Время/дата в карточке: caption1, Dynamic Type.
-    public static let taskMetaFont = Font.system(.caption1, design: .default)
+    /// Время/дата в карточке: caption, Dynamic Type.
+    public static let taskMetaFont = Font.system(.caption, design: .default)
 
     /// Текст UndoBanner: body, Dynamic Type.
     public static let bannerFont = Font.system(.body, design: .default)
@@ -63,8 +63,13 @@ public enum DesignSystem {
 
     // MARK: - Haptics
 
+    @MainActor
     public static let impactLight = UIImpactFeedbackGenerator(style: .light)
+
+    @MainActor
     public static let impactMedium = UIImpactFeedbackGenerator(style: .medium)
+
+    @MainActor
     public static let impactHeavy = UIImpactFeedbackGenerator(style: .heavy)
 
     // MARK: - Accessibility

@@ -46,7 +46,7 @@ public struct TaskCard<Task: Identifiable & Sendable>: View {
 
     @State private var progress: Double = 0
     @State private var isPressing = false
-    @State private var pressTask: Task<Void, Never>?
+    @State private var pressTask: Swift.Task<Void, Never>?
     @State private var dragOffset: CGSize = .zero
     @State private var showUndo = false
     @State private var isCompleting = false
@@ -222,9 +222,9 @@ public struct TaskCard<Task: Identifiable & Sendable>: View {
         DesignSystem.impactLight.prepare()
         DesignSystem.impactLight.impactOccurred()
 
-        pressTask = Task {
-            try? await Task.sleep(for: .seconds(DesignSystem.longPressDuration + 0.1))
-            guard !Task.isCancelled else { return }
+        pressTask = Swift.Task {
+            try? await Swift.Task.sleep(for: .seconds(DesignSystem.longPressDuration + 0.1))
+            guard !Swift.Task.isCancelled else { return }
             await MainActor.run { cancelProgress() }
         }
     }

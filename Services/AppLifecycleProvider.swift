@@ -2,7 +2,8 @@ import Foundation
 
 /// Общий провайдер состояния жизненного цикла приложения.
 /// Используется `UndoService` для проверки, активно ли приложение.
-public final class AppLifecycleProvider: Sendable {
+@unchecked Sendable
+public final class AppLifecycleProvider {
     private let lock = NSLock()
     private var _state: UndoService.LifecycleState = .active
 

@@ -25,6 +25,7 @@ targets:
         includes:
           - ContentView.swift
           - TaskCard/TaskCard.swift
+          - TaskCard/TaskItemModels.swift
           - TaskEditor/TaskEditor.swift
           - UndoBanner/UndoBanner.swift
           - OneTimeTasks/OneTimeTasksView.swift
