@@ -1,0 +1,68 @@
+name: focus
+
+# Temporary placeholder Bundle IDs for Stage 1 scaffold.
+# Final IDs will be set when the real App Store / development team is configured.
+# Application target: com.placeholder.focus
+# Test target:        com.placeholder.focusTests
+
+options:
+  bundleIdPrefix: com.placeholder
+  deploymentTarget:
+    iOS: 17.0
+
+packages: []
+
+schemes:
+  - name: focus
+    build:
+      targets:
+        - focus
+    test:
+      targets:
+        - focusTests
+
+targets:
+  - name: focus
+    type: application
+    platform: iOS
+    deploymentTarget: "17.0"
+    sources:
+      - path: App
+        includes:
+          - FocusApp.swift
+      - path: Features
+        includes:
+          - ContentView.swift
+      - path: Domain
+      - path: Data
+      - path: Services
+      - path: Design
+    settings:
+      base:
+        PRODUCT_BUNDLE_IDENTIFIER: com.placeholder.focus
+        SWIFT_VERSION: "5.9"
+        GENERATE_INFOPLIST_FILE: YES
+        INFOPLIST_KEY_UIUserInterfaceStyle: Automatic
+        TARGETED_DEVICE_FAMILY: "1,2"
+        SWIFT_STRICT_CONCURRENCY: complete
+        CODE_SIGN_IDENTITY: "-"
+        CODE_SIGNING_REQUIRED: NO
+
+  - name: focusTests
+    type: bundle
+    unit: true
+    platform: iOS
+    deploymentTarget: "17.0"
+    sources:
+      - path: Tests
+        includes:
+          - FocusTests.swift
+    dependencies:
+      - target: focus
+    settings:
+      base:
+        PRODUCT_BUNDLE_IDENTIFIER: com.placeholder.focusTests
+        SWIFT_VERSION: "5.9"
+        GENERATE_INFOPLIST_FILE: YES
+        CODE_SIGN_IDENTITY: "-"
+        CODE_SIGNING_REQUIRED: NO

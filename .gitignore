@@ -1,0 +1,48 @@
+# Swift / Xcode
+.DS_Store
+*.swp
+*.swo
+*.swn
+*.bak
+*.orig
+*.rej
+
+# Xcode
+*.xcodeproj
+*.xcworkspace
+xcshareddata
+*.ipa
+*.dSYM
+*.xcarchive
+
+# Swift Package Manager
+.swiftpm
+.build
+Package.resolved
+
+# SwiftGen / generated
+Generated/
+
+# IDE / Editor
+.idea/
+.vscode/
+*.iml
+*.swo
+*.swp
+
+# macOS
+.DS_Store
+.AppleDouble
+.LSOverride
+Icon
+
+# Logs / artifacts
+*.log
+*.ipa
+*.xcarchive
+build/
+DerivedData/
+
+# Caches
+*.pyc
+__pycache__/
