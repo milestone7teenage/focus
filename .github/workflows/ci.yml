@@ -27,32 +27,16 @@ jobs:
       - name: Select available iPhone Simulator
         id: select-simulator
         run: |
-          # Get list of available iPhone simulators
-          DEVICES_JSON=$(xcrun simctl list devices available -j)
-          UDID=$(echo "$DEVICES_JSON" | python3 -c "
-import sys, json
-data = json.load(sys.stdin)
-for runtime, devices in data.get('devices', {}).items():
-    if 'iOS' in runtime or 'iPhoneOS' in runtime:
-        for d in devices:
-            if d.get('isAvailable', False) and 'iPhone' in d.get('name', ''):
-                print(d['udid'])
-                sys.exit(0)
-sys.exit(1)
-")
-          if [ -z "$UDID" ]; then
+          SIMULATOR_UDID="$(xcrun simctl list devices available -j | jq -r '[.devices[][] | select(.isAvailable == true and (.name | startswith("iPhone")))] | first | .udid // empty')"
+
+          if [ -z "$SIMULATOR_UDID" ]; then
             echo "No available iPhone Simulator found"
-            echo "$DEVICES_JSON" | python3 -c "
-import sys, json
-data = json.load(sys.stdin)
-for runtime, devices in data.get('devices', {}).items():
-    for d in devices:
-        print(f\"  {d.get('name', 'unknown')} ({runtime}): available={d.get('isAvailable', False)}, state={d.get('state', 'unknown')}\")
-"
+            xcrun simctl list devices available
             exit 1
           fi
-          echo "Selected simulator: $UDID"
-          echo "udid=$UDID" >> $GITHUB_OUTPUT
+
+          echo "Selected simulator: $SIMULATOR_UDID"
+          echo "udid=$SIMULATOR_UDID" >> "$GITHUB_OUTPUT"
 
       - name: Build for testing
         run: |
