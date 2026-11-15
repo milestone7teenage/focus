@@ -33,6 +33,13 @@ targets:
       - path: Features
         includes:
           - ContentView.swift
+          - TaskCard/TaskCard.swift
+          - TaskEditor/TaskEditor.swift
+          - UndoBanner/UndoBanner.swift
+          - OneTimeTasks/OneTimeTasksView.swift
+          - OneTimeTasks/OneTimeTasksViewModel.swift
+          - RecurringTasks/RecurringTasksView.swift
+          - RecurringTasks/RecurringTasksViewModel.swift
       - path: Domain
         includes:
           - ReminderState.swift
@@ -51,6 +58,10 @@ targets:
           - UndoService.swift
           - TaskManager.swift
           - ScheduleEngine.swift
+          - AppLifecycleProvider.swift
+      - path: Design
+        includes:
+          - DesignSystem.swift
     settings:
       base:
         PRODUCT_BUNDLE_IDENTIFIER: com.placeholder.focus
