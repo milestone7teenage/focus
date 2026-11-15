@@ -31,3 +31,38 @@ SwiftUI, SwiftData, UserNotifications, Foundation Calendar/DateComponents. Пр�
 
 ## CI и IPA
 Успешная компиляция не доказывает успешную упаковку IPA, подпись или возможность установки. Эти пункты проверяются отдельно.
+
+### GitHub Actions Artifacts
+CI собирает **неподписанный `.ipa`** (`focus-unsigned.ipa`) как артефакт (`build-unsigned-ipa` job).
+- Артефакт создаётся с `CODE_SIGN_IDENTITY="" CODE_SIGNING_REQUIRED=NO CODE_SIGNING_ALLOWED=NO`.
+- **Неподписанный IPA нельзя установить напрямую на iPhone.**
+- Для установки на физическое устройство необходимо локально подписать IPA:
+  - через Xcode (`xcodebuild -exportArchive` с вашим Development/Ad-Hoc профилем),
+  - или через `fastlane` / `altstore` / `Sideloadly` / `TrollStore`.
+- Подпись и способ установки проверяются отдельно от CI.
+
+## Сборка локально (на macOS)
+```bash
+brew install xcodegen
+xcodegen generate
+xcodebuild -project focus.xcodeproj -scheme focus -destination 'platform=iOS Simulator,name=iPhone 16' build
+xcodebuild -project focus.xcodeproj -scheme focus -destination 'platform=iOS Simulator,name=iPhone 16' test
+```
+
+### Архивация и экспорт подписанного IPA (локально)
+```bash
+xcodebuild archive \
+  -project focus.xcodeproj \
+  -scheme focus \
+  -sdk iphoneos \
+  -configuration Release \
+  -archivePath build/focus.xcarchive \
+  DEVELOPMENT_TEAM="YOUR_TEAM_ID" \
+  CODE_SIGN_STYLE=Manual \
+  CODE_SIGN_IDENTITY="iPhone Distribution"
+
+xcodebuild -exportArchive \
+  -archivePath build/focus.xcarchive \
+  -exportPath build/export \
+  -exportOptionsPlist ExportOptions.plist
+```

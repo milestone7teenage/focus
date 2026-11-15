@@ -3,12 +3,12 @@ import UserNotifications
 
 /// Фейковый адаптер для unit-тестов.
 /// Хранит запросы в памяти, не требует реального UNUserNotificationCenter.
+/// Находится в Tests/ чтобы не попасть в продакшен-билд.
 public final class FakeNotificationCenterAdapter: NotificationCenterAdapter {
     private let lock = NSLock()
     private var _pending: [UNNotificationRequest] = []
     private var _categories: Set<UNNotificationCategory> = []
     private var _authorizationStatus: UNAuthorizationStatus = .notDetermined
-    private var _settings: UNNotificationSettings?
 
     public init() {}
 
@@ -49,14 +49,12 @@ public final class FakeNotificationCenterAdapter: NotificationCenterAdapter {
     public func getNotificationSettings() async -> UNNotificationSettings {
         lock.lock()
         defer { lock.unlock() }
-        // Return a mock settings object with the current authorization status
         return MockNotificationSettings(authorizationStatus: _authorizationStatus)
     }
 
     public func add(_ request: UNNotificationRequest) async throws {
         lock.lock()
         defer { lock.unlock() }
-        // Check for duplicate ID
         if !_pending.contains(where: { $0.identifier == request.identifier }) {
             _pending.append(request)
         }
@@ -94,7 +92,7 @@ public final class FakeNotificationCenterAdapter: NotificationCenterAdapter {
     }
 }
 
-// Mock UNNotificationSettings since it's not constructible directly
+// Mock UNNotificationSettings
 private final class MockNotificationSettings: UNNotificationSettings {
     private let _authorizationStatus: UNAuthorizationStatus
 

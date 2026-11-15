@@ -13,6 +13,9 @@ struct FocusApp: App {
         }
     }()
 
+    /// AppDelegate для ранней установки UNUserNotificationCenterDelegate.
+    @UIApplicationDelegateAdaptor(AppDelegate.self) private var appDelegate
+
     /// Shared lifecycle provider
     private static let lifecycleProvider = AppLifecycleProvider()
 
@@ -26,7 +29,6 @@ struct FocusApp: App {
     init() {
         let context = ModelContext(Self.modelContainer)
         let repository = TaskRepository(modelContext: context)
-        let scheduler = InMemoryNotificationScheduler()
         let engine = ScheduleEngine()
 
         // Real notification adapter for production
@@ -42,8 +44,8 @@ struct FocusApp: App {
             scheduler: notifScheduler
         )
 
-        // Set UNUserNotificationCenter delegate
-        UNUserNotificationCenter.current().delegate = actionHandler
+        // Устанавливаем делегат максимально рано через AppDelegate
+        appDelegate.setNotificationActionHandler(actionHandler)
 
         let undo = UndoService(
             lifecycle: Self.lifecycleProvider.lifecycleProvider
