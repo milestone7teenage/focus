@@ -13,7 +13,7 @@ options:
 packages: {}
 
 targets:
-  - name: focus
+  focus:
     type: application
     platform: iOS
     deploymentTarget: "17.0"
@@ -69,14 +69,9 @@ targets:
         SWIFT_STRICT_CONCURRENCY: complete
         CODE_SIGN_IDENTITY: "-"
         CODE_SIGNING_REQUIRED: NO
-    scheme:
-      testTargets:
-        - focusTests
-      gatherCoverageData: false
 
-  - name: focusTests
-    type: bundle
-    unit: true
+  focusTests:
+    type: bundle.unit-test
     platform: iOS
     deploymentTarget: "17.0"
     sources:
@@ -98,3 +93,13 @@ targets:
         GENERATE_INFOPLIST_FILE: YES
         CODE_SIGN_IDENTITY: "-"
         CODE_SIGNING_REQUIRED: NO
+
+schemes:
+  focus:
+    build:
+      targets:
+        focus: all
+    test:
+      targets:
+        - focusTests
+      gatherCoverageData: false
