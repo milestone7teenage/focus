@@ -10,7 +10,7 @@ options:
   deploymentTarget:
     iOS: 17.0
 
-packages: []
+packages: {}
 
 schemes:
   - name: focus
