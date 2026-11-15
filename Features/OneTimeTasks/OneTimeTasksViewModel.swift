@@ -3,27 +3,28 @@ import SwiftUI
 import Combine
 
 /// ViewModel для вкладки «Разовые» задачи.
-/// Связывает UI с TaskManager, управляет состоянием списка и Undo.
 @MainActor
 public final class OneTimeTasksViewModel: ObservableObject {
     @Published public var tasks: [OneTimeTaskItem] = []
     @Published public var showUndoBanner = false
+    @Published public var notificationPermissionDenied = false
 
-    private let manager: TaskManager
+    public let manager: TaskManager
+    public let notificationScheduler: NotificationScheduler
+
     private var undoSnapshot: TaskSnapshot?
     private var undoItem: OneTimeTaskItem?
 
-    public init(manager: TaskManager) {
+    public init(manager: TaskManager, notificationScheduler: NotificationScheduler) {
         self.manager = manager
+        self.notificationScheduler = notificationScheduler
     }
 
     public func load() async {
         do {
             let all = try await manager.fetchAllOneTime()
             tasks = all.map { OneTimeTaskItem(id: $0.id, title: $0.title, scheduledAt: $0.scheduledAt, isSeen: $0.state == .seen) }
-        } catch {
-            // Handle error silently for MVP
-        }
+        } catch { }
     }
 
     public func onAdd() {

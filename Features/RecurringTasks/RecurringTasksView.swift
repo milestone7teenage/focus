@@ -2,9 +2,8 @@ import SwiftUI
 
 /// Экран вкладки «Регулярные» задачи.
 public struct RecurringTasksView: View {
-    // MARK: - Input
-
     let templates: [RegularTaskItem]
+    @Binding var showUndoBanner: Bool
     let onTaskTap: (RegularTaskItem) -> Void
     let onComplete: (UUID) -> Void
     let onSnooze: (UUID) -> Void
@@ -12,26 +11,22 @@ public struct RecurringTasksView: View {
     let onUndo: () -> Void
     let onDismissUndo: () -> Void
     let onAdd: () -> Void
-
-    // MARK: - State
-
-    @State private var showEditor = false
-    @State private var undoItem: RegularTaskItem?
-    @State private var showUndoBanner = false
-
-    // MARK: - Body
+    let notificationPermissionDenied: Bool
 
     public init(
         templates: [RegularTaskItem],
+        showUndoBanner: Binding<Bool>,
         onTaskTap: @escaping (RegularTaskItem) -> Void,
         onComplete: @escaping (UUID) -> Void,
         onSnooze: @escaping (UUID) -> Void,
         onDelete: @escaping (UUID) -> Void,
         onUndo: @escaping () -> Void,
         onDismissUndo: @escaping () -> Void,
-        onAdd: @escaping () -> Void
+        onAdd: @escaping () -> Void,
+        notificationPermissionDenied: Bool
     ) {
         self.templates = templates
+        self._showUndoBanner = showUndoBanner
         self.onTaskTap = onTaskTap
         self.onComplete = onComplete
         self.onSnooze = onSnooze
@@ -39,6 +34,7 @@ public struct RecurringTasksView: View {
         self.onUndo = onUndo
         self.onDismissUndo = onDismissUndo
         self.onAdd = onAdd
+        self.notificationPermissionDenied = notificationPermissionDenied
     }
 
     public var body: some View {
@@ -58,18 +54,9 @@ public struct RecurringTasksView: View {
                                 showsTomorrowBadge: false,
                                 onComplete: { onComplete(item.id) },
                                 onSnooze: { onSnooze(item.id) },
-                                onDelete: {
-                                    undoItem = item
-                                    onDelete(item.id)
-                                },
-                                onUndo: {
-                                    onUndo()
-                                    showUndoBanner = false
-                                },
-                                onDismissUndo: {
-                                    onDismissUndo()
-                                    showUndoBanner = false
-                                }
+                                onDelete: { onDelete(item.id) },
+                                onUndo: { onUndo() },
+                                onDismissUndo: { onDismissUndo() }
                             )
                         )
                         .listRowBackground(Color.clear)
@@ -83,6 +70,11 @@ public struct RecurringTasksView: View {
             .listStyle(.plain)
             .scrollContentBackground(.hidden)
             .background(DesignSystem.background)
+            .overlay {
+                if notificationPermissionDenied && templates.isEmpty {
+                    permissionOverlay
+                }
+            }
 
             // Floating Add Button
             VStack {
@@ -108,41 +100,15 @@ public struct RecurringTasksView: View {
             if showUndoBanner {
                 UndoBanner(
                     message: "Удалено",
-                    onUndo: {
-                        onUndo()
-                        showUndoBanner = false
-                    },
-                    onDismiss: {
-                        onDismissUndo()
-                        showUndoBanner = false
-                    }
+                    onUndo: { onUndo() },
+                    onDismiss: { onDismissUndo() }
                 )
                 .padding(.horizontal, 16)
                 .padding(.bottom, 90)
                 .transition(.move(edge: .bottom).combined(with: .opacity))
             }
         }
-        .sheet(isPresented: $showEditor) {
-            TaskEditor(
-                mode: .createRegular,
-                onSave: { _ in },
-                onSaveRegular: { draft in
-                    if let draft { /* сохранение через VM */ }
-                    showEditor = false
-                },
-                onCancel: { showEditor = false }
-            )
-        }
-        .onChange(of: undoItem) { _, new in
-            if new != nil {
-                withAnimation(.spring(response: 0.3, dampingFraction: 0.8)) {
-                    showUndoBanner = true
-                }
-            }
-        }
     }
-
-    // MARK: - Empty State
 
     private var emptyState: some View {
         VStack(spacing: DesignSystem.sectionSpacing) {
@@ -165,47 +131,26 @@ public struct RecurringTasksView: View {
         .frame(maxWidth: .infinity)
         .padding(.vertical, 60)
     }
-}
 
-// MARK: - View Model Item
+    private var permissionOverlay: some View {
+        VStack(spacing: 16) {
+            Image(systemName: "bell.slash")
+                .font(.system(size: 48, weight: .light))
+                .foregroundStyle(DesignSystem.tertiaryText)
 
-/// Прослойка для UI — регулярная задача с текущим дневным экземпляром.
-public struct RegularTaskItem: Identifiable, Sendable {
-    public let id: UUID
-    public let title: String
-    public let localHour: Int
-    public let localMinute: Int
-    public let isEnabled: Bool
-    public let instanceState: ReminderState?
-    public let instanceSnoozedUntil: Date?
+            VStack(spacing: 8) {
+                Text("Уведомления отключены")
+                    .font(.title3.weight(.medium))
+                    .foregroundStyle(DesignSystem.primaryText)
 
-    public init(
-        id: UUID,
-        title: String,
-        localHour: Int,
-        localMinute: Int,
-        isEnabled: Bool,
-        instanceState: ReminderState? = nil,
-        instanceSnoozedUntil: Date? = nil
-    ) {
-        self.id = id
-        self.title = title
-        self.localHour = localHour
-        self.localMinute = localMinute
-        self.isEnabled = isEnabled
-        self.instanceState = instanceState
-        self.instanceSnoozedUntil = instanceSnoozedUntil
-    }
-
-    var formattedTime: String {
-        let formatter = DateFormatter()
-        formatter.timeStyle = .short
-        formatter.locale = Locale.current
-        let date = Calendar.current.date(bySettingHour: localHour, minute: localMinute, second: 0, of: Date()) ?? Date()
-        return formatter.string(from: date)
-    }
-
-    var isSeen: Bool {
-        instanceState == .seen
+                Text("Напоминания не сработают без разрешения на уведомления.")
+                    .font(DesignSystem.taskMetaFont)
+                    .foregroundStyle(DesignSystem.secondaryText)
+                    .multilineTextAlignment(.center)
+                    .padding(.horizontal, 32)
+            }
+        }
+        .frame(maxWidth: .infinity)
+        .padding(.vertical, 60)
     }
 }

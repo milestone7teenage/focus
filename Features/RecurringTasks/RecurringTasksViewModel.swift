@@ -7,13 +7,17 @@ import Combine
 public final class RecurringTasksViewModel: ObservableObject {
     @Published public var templates: [RegularTaskItem] = []
     @Published public var showUndoBanner = false
+    @Published public var notificationPermissionDenied = false
 
-    private let manager: TaskManager
+    public let manager: TaskManager
+    public let notificationScheduler: NotificationScheduler
+
     private var undoSnapshot: TaskSnapshot?
     private var undoItem: RegularTaskItem?
 
-    public init(manager: TaskManager) {
+    public init(manager: TaskManager, notificationScheduler: NotificationScheduler) {
         self.manager = manager
+        self.notificationScheduler = notificationScheduler
     }
 
     public func load() async {
@@ -49,7 +53,6 @@ public final class RecurringTasksViewModel: ObservableObject {
 
     public func onComplete(_ id: UUID) async {
         do {
-            // Находим экземпляр для этого шаблона
             let instances = try await manager.fetchActiveInstances(for: id)
             if let instance = instances.first(where: { $0.dayKey == CalendarPolicy.dayKey(for: .now) }) {
                 try await manager.completeInstance(id: instance.id)

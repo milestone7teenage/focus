@@ -2,9 +2,8 @@ import SwiftUI
 
 /// Экран вкладки «Разовые» задачи.
 public struct OneTimeTasksView: View {
-    // MARK: - Input
-
     let tasks: [OneTimeTaskItem]
+    @Binding var showUndoBanner: Bool
     let onTaskTap: (OneTimeTaskItem) -> Void
     let onComplete: (UUID) -> Void
     let onSnooze: (UUID) -> Void
@@ -12,26 +11,22 @@ public struct OneTimeTasksView: View {
     let onUndo: () -> Void
     let onDismissUndo: () -> Void
     let onAdd: () -> Void
-
-    // MARK: - State
-
-    @State private var showEditor = false
-    @State private var undoItem: OneTimeTaskItem?
-    @State private var showUndoBanner = false
-
-    // MARK: - Body
+    let notificationPermissionDenied: Bool
 
     public init(
         tasks: [OneTimeTaskItem],
+        showUndoBanner: Binding<Bool>,
         onTaskTap: @escaping (OneTimeTaskItem) -> Void,
         onComplete: @escaping (UUID) -> Void,
         onSnooze: @escaping (UUID) -> Void,
         onDelete: @escaping (UUID) -> Void,
         onUndo: @escaping () -> Void,
         onDismissUndo: @escaping () -> Void,
-        onAdd: @escaping () -> Void
+        onAdd: @escaping () -> Void,
+        notificationPermissionDenied: Bool
     ) {
         self.tasks = tasks
+        self._showUndoBanner = showUndoBanner
         self.onTaskTap = onTaskTap
         self.onComplete = onComplete
         self.onSnooze = onSnooze
@@ -39,6 +34,7 @@ public struct OneTimeTasksView: View {
         self.onUndo = onUndo
         self.onDismissUndo = onDismissUndo
         self.onAdd = onAdd
+        self.notificationPermissionDenied = notificationPermissionDenied
     }
 
     public var body: some View {
@@ -58,18 +54,9 @@ public struct OneTimeTasksView: View {
                                 showsTomorrowBadge: item.isTomorrow,
                                 onComplete: { onComplete(item.id) },
                                 onSnooze: { onSnooze(item.id) },
-                                onDelete: {
-                                    undoItem = item
-                                    onDelete(item.id)
-                                },
-                                onUndo: {
-                                    onUndo()
-                                    showUndoBanner = false
-                                },
-                                onDismissUndo: {
-                                    onDismissUndo()
-                                    showUndoBanner = false
-                                }
+                                onDelete: { onDelete(item.id) },
+                                onUndo: { onUndo() },
+                                onDismissUndo: { onDismissUndo() }
                             )
                         )
                         .listRowBackground(Color.clear)
@@ -83,6 +70,11 @@ public struct OneTimeTasksView: View {
             .listStyle(.plain)
             .scrollContentBackground(.hidden)
             .background(DesignSystem.background)
+            .overlay {
+                if notificationPermissionDenied && tasks.isEmpty {
+                    permissionOverlay
+                }
+            }
 
             // Floating Add Button
             VStack {
@@ -108,41 +100,15 @@ public struct OneTimeTasksView: View {
             if showUndoBanner {
                 UndoBanner(
                     message: "Удалено",
-                    onUndo: {
-                        onUndo()
-                        showUndoBanner = false
-                    },
-                    onDismiss: {
-                        onDismissUndo()
-                        showUndoBanner = false
-                    }
+                    onUndo: { onUndo() },
+                    onDismiss: { onDismissUndo() }
                 )
                 .padding(.horizontal, 16)
                 .padding(.bottom, 90)
                 .transition(.move(edge: .bottom).combined(with: .opacity))
             }
         }
-        .sheet(isPresented: $showEditor) {
-            TaskEditor(
-                mode: .createOneTime,
-                onSave: { draft in
-                    if let draft { /* сохранение через VM */ }
-                    showEditor = false
-                },
-                onSaveRegular: { _ in },
-                onCancel: { showEditor = false }
-            )
-        }
-        .onChange(of: undoItem) { _, new in
-            if new != nil {
-                withAnimation(.spring(response: 0.3, dampingFraction: 0.8)) {
-                    showUndoBanner = true
-                }
-            }
-        }
     }
-
-    // MARK: - Empty State
 
     private var emptyState: some View {
         VStack(spacing: DesignSystem.sectionSpacing) {
@@ -165,34 +131,26 @@ public struct OneTimeTasksView: View {
         .frame(maxWidth: .infinity)
         .padding(.vertical, 60)
     }
-}
 
-// MARK: - View Model Item
+    private var permissionOverlay: some View {
+        VStack(spacing: 16) {
+            Image(systemName: "bell.slash")
+                .font(.system(size: 48, weight: .light))
+                .foregroundStyle(DesignSystem.tertiaryText)
 
-/// Прослойка для UI — легкая модель без SwiftData зависимостей.
-public struct OneTimeTaskItem: Identifiable, Sendable {
-    public let id: UUID
-    public let title: String
-    public let scheduledAt: Date
-    public let isSeen: Bool
+            VStack(spacing: 8) {
+                Text("Уведомления отключены")
+                    .font(.title3.weight(.medium))
+                    .foregroundStyle(DesignSystem.primaryText)
 
-    public init(id: UUID, title: String, scheduledAt: Date, isSeen: Bool) {
-        self.id = id
-        self.title = title
-        self.scheduledAt = scheduledAt
-        self.isSeen = isSeen
-    }
-
-    var formattedDate: String {
-        let formatter = DateFormatter()
-        formatter.dateStyle = .medium
-        formatter.timeStyle = .short
-        formatter.doesRelativeDateFormatting = true
-        formatter.locale = Locale.current
-        return formatter.string(from: scheduledAt)
-    }
-
-    var isTomorrow: Bool {
-        Calendar.current.isDateInTomorrow(scheduledAt)
+                Text("Напоминания не сработают без разрешения на уведомления.")
+                    .font(DesignSystem.taskMetaFont)
+                    .foregroundStyle(DesignSystem.secondaryText)
+                    .multilineTextAlignment(.center)
+                    .padding(.horizontal, 32)
+            }
+        }
+        .frame(maxWidth: .infinity)
+        .padding(.vertical, 60)
     }
 }

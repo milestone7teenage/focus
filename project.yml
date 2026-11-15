@@ -59,6 +59,12 @@ targets:
           - TaskManager.swift
           - ScheduleEngine.swift
           - AppLifecycleProvider.swift
+          - NotificationCenterAdapter.swift
+          - RealNotificationCenterAdapter.swift
+          - FakeNotificationCenterAdapter.swift
+          - NotificationScheduler.swift
+          - NotificationActionHandler.swift
+          - AppLifecycleCoordinator.swift
       - path: Design
         includes:
           - DesignSystem.swift
@@ -85,6 +91,7 @@ targets:
           - TaskManagerTests.swift
           - UndoServiceTests.swift
           - ScheduleEngineTests.swift
+          - NotificationSchedulerTests.swift
     dependencies:
       - target: focus
     settings:
