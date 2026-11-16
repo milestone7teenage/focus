@@ -19,7 +19,7 @@ final class ScheduleEngineTests: XCTestCase {
     func testDayKeyFormat() async throws {
         let key = await engine.dayKey()
         let pattern = #/^\d{4}-\d{2}-\d{2}$/#
-        XCTAssertTrue(key.range(of: pattern) != nil, "dayKey должен быть в формате YYYY-MM-DD, получен: \(key)")
+        XCTAssertTrue(key.wholeMatch(of: pattern) != nil, "dayKey должен быть в формате YYYY-MM-DD, получен: \(key)")
     }
 
     func testDayKeyConsistencyWithCalendar() async throws {
@@ -246,7 +246,7 @@ final class ScheduleEngineTests: XCTestCase {
         // в следующем запуске/резет он отразит новый локальный день.
         let key = await engine.dayKey()
         let pattern = #/^\d{4}-\d{2}-\d{2}$/#
-        XCTAssertTrue(key.range(of: pattern) != nil)
+        XCTAssertTrue(key.wholeMatch(of: pattern) != nil)
     }
 
     // MARK: - startOfDay / nextLocalDay use Calendar, not 86400

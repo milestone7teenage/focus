@@ -83,7 +83,7 @@ final class NotificationSchedulerTests: XCTestCase {
 
         let parts = req.identifier.split(separator: "_")
         XCTAssertEqual(parts[0], "ot", "Префикс для one-time")
-        XCTAssertEqual(parts[1], task.id.uuidString, "UUID задачи")
+        XCTAssertEqual(String(parts[1]), task.id.uuidString, "UUID задачи")
         XCTAssertEqual(Int(parts[3]) ?? -1, task.notificationGeneration, "Поколение")
         XCTAssertEqual(Int(parts[4]) ?? -1, 0, "repeatIndex для первого уведомления")
     }
