@@ -8,6 +8,8 @@ public protocol NotificationScheduling: Sendable {
     func cancel(ids: [String]) async
     func cancelAll() async
     func pendingRequests() async -> [NotificationRequest]
+    func requestAuthorization(options: UNAuthorizationOptions) async -> Bool
+    func authorizationStatus() async -> UNAuthorizationStatus
 }
 
 /// Запрос уведомления, передаваемый планировщику.
@@ -32,6 +34,7 @@ public struct NotificationRequest: Sendable, Equatable {
 /// Заглушка, которая просто хранит запросы в памяти. Используется в тестах и по умолчанию.
 public actor InMemoryNotificationScheduler: NotificationScheduling {
     private var store: [NotificationRequest] = []
+    private var _authorizationStatus: UNAuthorizationStatus = .notDetermined
 
     public init() {}
 
@@ -49,5 +52,13 @@ public actor InMemoryNotificationScheduler: NotificationScheduling {
 
     public func pendingRequests() async -> [NotificationRequest] {
         store
+    }
+
+    public func requestAuthorization(options: UNAuthorizationOptions) async -> Bool {
+        .authorized
+    }
+
+    public func authorizationStatus() async -> UNAuthorizationStatus {
+        .authorized
     }
 }

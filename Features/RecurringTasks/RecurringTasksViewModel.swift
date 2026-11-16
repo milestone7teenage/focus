@@ -7,7 +7,8 @@ import Combine
 public final class RecurringTasksViewModel: ObservableObject {
     @Published public var templates: [RegularTaskItem] = []
     @Published public var showUndoBanner = false
-    @Published public var notificationPermissionDenied = false
+    @Published public var showCreateSheet = false
+    @Published public var notificationAuthorizationStatus: UNAuthorizationStatus = .notDetermined
 
     public let manager: TaskManager
     public let notificationScheduler: NotificationScheduler
@@ -40,11 +41,13 @@ public final class RecurringTasksViewModel: ObservableObject {
                 ))
             }
             templates = items
+            await updateNotificationStatus()
         } catch { }
     }
 
     public func onAdd() {
-        // Sheet presentation handled by view
+        // Always open sheet regardless of notification permission
+        showCreateSheet = true
     }
 
     public func onTaskTap(_ item: RegularTaskItem) {
@@ -102,6 +105,25 @@ public final class RecurringTasksViewModel: ObservableObject {
         undoItem = nil
         withAnimation(.spring(response: 0.3, dampingFraction: 0.8)) {
             showUndoBanner = false
+        }
+    }
+
+    /// Called when user taps "Разрешить" in notification banner.
+    /// Only requests authorization and updates status. Does NOT open create sheet.
+    public func requestNotificationPermission() async {
+        await notificationScheduler.requestAuthorization(options: [.alert, .sound, .badge])
+        await updateNotificationStatus()
+    }
+
+    /// Call when app becomes active (e.g., returning from Settings)
+    public func refreshNotificationStatus() async {
+        await updateNotificationStatus()
+    }
+
+    private func updateNotificationStatus() async {
+        let status = await notificationScheduler.authorizationStatus()
+        await MainActor.run {
+            self.notificationAuthorizationStatus = status
         }
     }
 }
