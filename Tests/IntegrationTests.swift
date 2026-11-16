@@ -275,7 +275,7 @@ final class IntegrationTests: XCTestCase {
         XCTAssertEqual(instances.first?.state, .seen)
 
         let pending = await fakeAdapter.pendingRequests()
-        let taskPending = pending.filter { $0.identifier.hasPrefix("rt_\(template.id.uuidString)") }
+        let taskPending = pending.filter { $0.identifier.hasPrefix("rt_\(instance.id.uuidString)") }
         XCTAssertTrue(taskPending.isEmpty)
     }
 

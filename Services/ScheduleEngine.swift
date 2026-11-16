@@ -99,28 +99,26 @@ public actor ScheduleEngine {
         }
 
         // 2. Для каждого активного шаблона гарантируем ровно один PENDING-экземпляр на текущий день.
+        // Сначала удаляем все экземпляры на сегодня для каждого шаблона (удаляет дубликаты),
+        // затем создаём новый, если шаблон включен.
         for template in templates where template.isEnabled {
-            let existing = instances.first { $0.templateID == template.id && $0.dayKey == currentDay }
-
-            if let existing {
-                // Сброс состояния: приоритет reset над вчерашним snooze.
-                // Снимок уничтожается, snooze не переносится.
-                existing.state = .pending
-                existing.snoozedUntil = nil
-                existing.repeatCount = 0
-            } else {
-                // Создаём новый PENDING-экземпляр.
-                let instance = DailyTaskInstance(
-                    templateID: template.id,
-                    template: template,
-                    dayKey: currentDay,
-                    state: .pending,
-                    repeatCount: 0,
-                    snoozedUntil: nil,
-                    notificationGeneration: template.notificationGeneration
-                )
-                try await createInstance(instance)
+            // Удаляем все экземпляры на сегодня для этого шаблона (включая дубликаты)
+            let todayInstances = instances.filter { $0.templateID == template.id && $0.dayKey == currentDay }
+            for instance in todayInstances {
+                try await deleteInstance(instance.id)
             }
+
+            // Создаём новый PENDING-экземпляр
+            let instance = DailyTaskInstance(
+                templateID: template.id,
+                template: template,
+                dayKey: currentDay,
+                state: .pending,
+                repeatCount: 0,
+                snoozedUntil: nil,
+                notificationGeneration: template.notificationGeneration
+            )
+            try await createInstance(instance)
         }
     }
 }

@@ -65,8 +65,9 @@ final class NotificationSchedulerTests: XCTestCase {
 
         try await scheduler.reconcile()
 
+        let instance = try await manager.fetchActiveInstances(for: template.id).first!
         let pending = await fakeAdapter.pendingRequests()
-        let taskRequests = pending.filter { $0.identifier.hasPrefix("rt_\(template.id.uuidString)") }
+        let taskRequests = pending.filter { $0.identifier.hasPrefix("rt_\(instance.id.uuidString)") }
         XCTAssertEqual(taskRequests.count, 4, "Должно быть 4 уведомления на цикл для регулярной задачи")
     }
 
@@ -130,12 +131,12 @@ final class NotificationSchedulerTests: XCTestCase {
 
         try await scheduler.reconcile()
         var pending = await fakeAdapter.pendingRequests()
-        XCTAssertEqual(pending.filter { $0.identifier.hasPrefix("rt_\(template.id.uuidString)") }.count, 4)
+        XCTAssertEqual(pending.filter { $0.identifier.hasPrefix("rt_\(instance.id.uuidString)") }.count, 4)
 
         try await manager.completeInstance(id: instance.id)
 
         pending = await fakeAdapter.pendingRequests()
-        let remaining = pending.filter { $0.identifier.hasPrefix("rt_\(template.id.uuidString)") }
+        let remaining = pending.filter { $0.identifier.hasPrefix("rt_\(instance.id.uuidString)") }
         XCTAssertTrue(remaining.isEmpty, "Все уведомления экземпляра отменены после выполнения")
     }
 

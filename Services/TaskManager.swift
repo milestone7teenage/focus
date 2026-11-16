@@ -194,9 +194,14 @@ public final class TaskManager: Sendable {
     // MARK: - SEEN
 
     /// Идемпотентный перевод активной задачи в `seen`.
+    /// Отменяет оставшиеся повторы текущего цикла уведомлений.
     public func markOneTimeSeen(id: UUID) async throws {
         guard let task = try await repository.fetchOneTime(id: id) else { return }
         guard task.state != .seen else { return }
+        let generation = task.notificationGeneration
+        let pending = await scheduler.pendingRequests()
+        let ids = pending.filter { $0.generation == generation }.map(\.id)
+        await scheduler.cancel(ids: ids)
         task.state = .seen
         try await repository.updateOneTime(task)
     }
@@ -204,6 +209,10 @@ public final class TaskManager: Sendable {
     public func markInstanceSeen(id: UUID) async throws {
         guard let instance = try await repository.fetchInstance(id: id) else { return }
         guard instance.state != .seen else { return }
+        let generation = instance.notificationGeneration
+        let pending = await scheduler.pendingRequests()
+        let ids = pending.filter { $0.generation == generation }.map(\.id)
+        await scheduler.cancel(ids: ids)
         instance.state = .seen
         try await repository.save()
     }
