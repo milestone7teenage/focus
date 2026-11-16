@@ -1,4 +1,5 @@
-import Foundation
+@preconcurrency import Foundation
+@preconcurrency import UserNotifications
 
 /// Абстракция над планировщиком уведомлений.
 /// На Этапе 2 (до Этапа 5) используется заглушка, чтобы `TaskManager` мог дёргать

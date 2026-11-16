@@ -1,7 +1,8 @@
-import Foundation
-import UserNotifications
+@preconcurrency import Foundation
+@preconcurrency import UserNotifications
 
 /// Продакшен-адаптер над `UNUserNotificationCenter.current()`.
+@unchecked Sendable
 public final class RealNotificationCenterAdapter: NotificationCenterAdapter {
     private let center: UNUserNotificationCenter
 
