@@ -60,7 +60,8 @@ final class NotificationSchedulerTests: XCTestCase {
     }
 
     func testScheduleRecurringCreatesFourNotifications() async throws {
-        let template = try await manager.createRegular(title: "Daily", localHour: 12, localMinute: 0)
+        // Используем будущее время (23:00), чтобы fireDate гарантированно был в будущем
+        let template = try await manager.createRegular(title: "Daily", localHour: 23, localMinute: 0)
         let instance = try await manager.fetchActiveInstances(for: template.id).first!
 
         try await scheduler.reconcile()
@@ -81,7 +82,9 @@ final class NotificationSchedulerTests: XCTestCase {
         let pending = await fakeAdapter.pendingRequests()
         let req = pending.first { $0.identifier.hasPrefix("ot_\(task.id.uuidString)") }!
 
-        let parts = req.identifier.split(separator: "_")
+        // Сохраняем пустые подстроки (dayKey пустой для one-time -> двойное подчёркивание)
+        let parts = req.identifier.split(separator: "_", omittingEmptySubsequences: false)
+        // Формат: ot_UUID__generation_repeatIndex -> [ot, UUID, "", generation, repeatIndex]
         XCTAssertEqual(parts[0], "ot", "Префикс для one-time")
         XCTAssertEqual(String(parts[1]), task.id.uuidString, "UUID задачи")
         XCTAssertEqual(Int(parts[3]) ?? -1, task.notificationGeneration, "Поколение")

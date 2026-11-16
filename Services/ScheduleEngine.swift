@@ -83,6 +83,7 @@ public actor ScheduleEngine {
     /// - Находит устаревшие дневные экземпляры (dayKey != текущего локального дня).
     /// - Удаляет их без истории.
     /// - Обеспечивает ровно один актуальный PENDING-экземпляр для каждого активного шаблона (isEnabled == true).
+    /// - Для отключённых шаблонов удаляет экземпляр на сегодня (если есть).
     /// - Приоритет reset над вчерашним snooze: snooze не переносится.
     /// - Не прибавляет 86 400 секунд для перехода на следующий календарный день.
     public func performReset(
@@ -98,27 +99,29 @@ public actor ScheduleEngine {
             try await deleteInstance(instance.id)
         }
 
-        // 2. Для каждого активного шаблона гарантируем ровно один PENDING-экземпляр на текущий день.
-        // Сначала удаляем все экземпляры на сегодня для каждого шаблона (удаляет дубликаты),
-        // затем создаём новый, если шаблон включен.
-        for template in templates where template.isEnabled {
-            // Удаляем все экземпляры на сегодня для этого шаблона (включая дубликаты)
+        // 2. Для каждого шаблона обрабатываем экземпляры на сегодня.
+        for template in templates {
             let todayInstances = instances.filter { $0.templateID == template.id && $0.dayKey == currentDay }
+
+            // Удаляем все экземпляры на сегодня для этого шаблона (включая дубликаты и экземпляры отключённых шаблонов)
             for instance in todayInstances {
                 try await deleteInstance(instance.id)
             }
 
-            // Создаём новый PENDING-экземпляр
-            let instance = DailyTaskInstance(
-                templateID: template.id,
-                template: template,
-                dayKey: currentDay,
-                state: .pending,
-                repeatCount: 0,
-                snoozedUntil: nil,
-                notificationGeneration: template.notificationGeneration
-            )
-            try await createInstance(instance)
+            // 3. Если шаблон включен — создаём новый PENDING-экземпляр.
+            if template.isEnabled {
+                let instance = DailyTaskInstance(
+                    templateID: template.id,
+                    template: template,
+                    dayKey: currentDay,
+                    state: .pending,
+                    repeatCount: 0,
+                    snoozedUntil: nil,
+                    notificationGeneration: template.notificationGeneration
+                )
+                try await createInstance(instance)
+            }
+            // Если шаблон отключен — экземпляр на сегодня уже удалён, новый не создаём.
         }
     }
 }

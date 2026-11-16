@@ -38,6 +38,11 @@ jobs:
           echo "Selected simulator: $SIMULATOR_UDID"
           echo "udid=$SIMULATOR_UDID" >> "$GITHUB_OUTPUT"
 
+      - name: Boot simulator
+        run: |
+          xcrun simctl boot "${{ steps.select-simulator.outputs.udid }}" || true
+          xcrun simctl bootstatus "${{ steps.select-simulator.outputs.udid }}" -b
+
       - name: Build for testing
         run: |
           xcodebuild \

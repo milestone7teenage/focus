@@ -108,20 +108,32 @@ public final class TaskManager: Sendable {
     // MARK: - Delete + Undo
 
     /// Удаление разовой задачи: немедленное удаление из SwiftData + снимок на 3 секунды.
+    /// Отменяет все уведомления задачи.
     public func deleteOneTime(id: UUID) async throws -> TaskSnapshot? {
         guard let task = try await repository.fetchOneTime(id: id) else { return nil }
+        let generation = task.notificationGeneration
+        let pending = await scheduler.pendingRequests()
+        let ids = pending.filter { $0.generation == generation }.map(\.id)
+        await scheduler.cancel(ids: ids)
         let snapshot = TaskSnapshot.oneTime(OneTimeSnapshot(task))
         try await repository.deleteOneTime(id: id)
         return snapshot
     }
 
     /// Удаление регулярной задачи: удаляет шаблон и текущий экземпляр + снимок.
+    /// Отменяет все уведомления текущего экземпляра.
     public func deleteRegular(id: UUID) async throws -> TaskSnapshot? {
         guard let template = try await repository.fetchRegular(id: id) else { return nil }
         let instances = try await repository.fetchInstances(for: id)
         let currentDay = await engine.dayKey()
         let currentInstance = instances.first { $0.dayKey == currentDay }
+        let generation = currentInstance?.notificationGeneration
         let snapshot = TaskSnapshot.recurring(RecurringSnapshot(template: template, instance: currentInstance))
+        if let generation = generation {
+            let pending = await scheduler.pendingRequests()
+            let ids = pending.filter { $0.generation == generation }.map(\.id)
+            await scheduler.cancel(ids: ids)
+        }
         try await repository.deleteRegular(id: id)
         return snapshot
     }
