@@ -2,8 +2,7 @@
 @preconcurrency import UserNotifications
 
 /// Продакшен-адаптер над `UNUserNotificationCenter.current()`.
-@unchecked Sendable
-public final class RealNotificationCenterAdapter: NotificationCenterAdapter {
+public final class RealNotificationCenterAdapter: NotificationCenterAdapter, @unchecked Sendable {
     private let center: UNUserNotificationCenter
 
     public init(center: UNUserNotificationCenter = .current()) {
