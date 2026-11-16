@@ -1,6 +1,8 @@
 import Foundation
 import UserNotifications
 
+@testable import focus
+
 /// Фейковый адаптер для unit-тестов.
 /// Хранит запросы в памяти, не требует реального UNUserNotificationCenter.
 /// Находится в Tests/ чтобы не попадал в продакшен-билд.
@@ -100,6 +102,10 @@ private final class MockNotificationSettings: UNNotificationSettings {
     init(authorizationStatus: UNAuthorizationStatus) {
         self._authorizationStatus = authorizationStatus
         super.init()
+    }
+
+    required init?(coder: NSCoder) {
+        fatalError("init(coder:) has not been implemented")
     }
 
     override var authorizationStatus: UNAuthorizationStatus {

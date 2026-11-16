@@ -3,14 +3,6 @@ import SwiftData
 import XCTest
 @testable import focus
 
-/// In-memory ModelContainer для тестов.
-enum TestContainer {
-    static func make() throws -> ModelContainer {
-        let config = ModelConfiguration(isStoredInMemoryOnly: true)
-        return try ModelContainer(for: SchemaV1.schema, configurations: config)
-    }
-}
-
 @MainActor
 final class TaskManagerTests: XCTestCase {
     private var container: ModelContainer!
