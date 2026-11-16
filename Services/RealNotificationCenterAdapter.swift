@@ -38,6 +38,10 @@ public final class RealNotificationCenterAdapter: NotificationCenterAdapter {
     }
 
     public func getNotificationCategories() async -> Set<UNNotificationCategory> {
-        await center.getNotificationCategories()
+        await withCheckedContinuation { continuation in
+            center.getNotificationCategories { categories in
+                continuation.resume(returning: categories)
+            }
+        }
     }
 }

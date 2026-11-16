@@ -3,7 +3,7 @@ import SwiftUI
 /// Карточка задачи (TaskCard) — многострочное отображение названия, даты/времени,
 /// состояния SEEN, Long Press (~0.6 сек) выполнение, свайп влево удаление,
 /// свайп вправо Snooze, Accessibility actions.
-public struct TaskCard<Task: Identifiable & Sendable>: View {
+public struct TaskCard: View {
     // MARK: - Configuration
 
     public struct Configuration {

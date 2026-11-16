@@ -64,7 +64,7 @@ public final class NotificationActionHandler: NSObject, UNUserNotificationCenter
 
     private func processSeen(idString: String, generation: Int) async {
         // Парсим ID: "ot_UUID_generation_repeatIndex" или "rt_UUID_dayKey_generation_repeatIndex"
-        let parts = idString.split(separator: "_")
+        let parts = idString.split(separator: "_").map(String.init)
         guard parts.count >= 4 else { return }
 
         let typePrefix = parts[0]

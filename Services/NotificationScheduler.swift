@@ -7,7 +7,8 @@ public final class NotificationScheduler: NotificationScheduling {
     // MARK: - Constants
 
     /// Безопасный лимит ожидающих запросов (из 64 системных слотов).
-    private static let maxPendingRequests = 60
+    /// Internal, чтобы тесты могли проверить соблюдение бюджета.
+    static let maxPendingRequests = 60
 
     // MARK: - Properties
 
@@ -149,7 +150,7 @@ public final class NotificationScheduler: NotificationScheduling {
         // 5. Удаляем устаревшие/лишние (сиротские) запросы
         let toRemove = currentIDs.subtracting(neededIDs)
         if !toRemove.isEmpty {
-            cancel(ids: Array(toRemove))
+            await cancel(ids: Array(toRemove))
         }
     }
 

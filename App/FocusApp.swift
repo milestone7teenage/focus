@@ -49,14 +49,7 @@ struct FocusApp: App {
 
         let undo = UndoService(
             lifecycle: Self.lifecycleProvider.lifecycleProvider
-        ) { snapshot in
-            Task { @MainActor in
-                let context = ModelContext(Self.modelContainer)
-                let repo = TaskRepository(modelContext: context)
-                let mgr = TaskManager(repository: repo, scheduler: notifScheduler, engine: engine)
-                try await mgr.restore(snapshot: snapshot)
-            }
-        }
+        )
 
         let coordinator = AppLifecycleCoordinator(
             manager: TaskManager(repository: repository, scheduler: notifScheduler, engine: engine),
@@ -97,11 +90,11 @@ struct FocusApp: App {
             }
         case .inactive:
             Self.lifecycleProvider.setState(.inactive)
-            undoService.cancel()
+            Task { await undoService.cancel() }
             Task { await lifecycleCoordinator.onAppInactive() }
         case .background:
             Self.lifecycleProvider.setState(.background)
-            undoService.cancel()
+            Task { await undoService.cancel() }
         @unknown default:
             break
         }
