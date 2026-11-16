@@ -85,6 +85,7 @@ targets:
           - NotificationSchedulerTests.swift
           - IntegrationTests.swift
           - FakeNotificationCenterAdapter.swift
+          - TestHelpers.swift
     dependencies:
       - target: focus
     settings:

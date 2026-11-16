@@ -10,6 +10,6 @@ final class FocusTests: XCTestCase {
         // Проверка формата YYYY-MM-DD.
         let key = CalendarPolicy.dayKey(for: .now)
         let pattern = #/^\d{4}-\d{2}-\d{2}$/#
-        XCTAssertTrue(key.range(of: pattern) != nil, "dayKey должен быть в формате YYYY-MM-DD, получен: \(key)")
+        XCTAssertTrue(key.wholeMatch(of: pattern) != nil, "dayKey должен быть в формате YYYY-MM-DD, получен: \(key)")
     }
 }

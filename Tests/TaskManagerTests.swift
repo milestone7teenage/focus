@@ -9,11 +9,12 @@ final class TaskManagerTests: XCTestCase {
     private var manager: TaskManager!
     private var scheduler: InMemoryNotificationScheduler!
     private var engine: ScheduleEngine!
+    private var repository: TaskRepository!
 
     override func setUp() async throws {
         container = try TestContainer.make()
         let context = ModelContext(container)
-        let repository = TaskRepository(modelContext: context)
+        repository = TaskRepository(modelContext: context)
         scheduler = InMemoryNotificationScheduler()
         engine = ScheduleEngine()
         manager = TaskManager(repository: repository, scheduler: scheduler, engine: engine)
@@ -75,8 +76,9 @@ final class TaskManagerTests: XCTestCase {
 
         // Первый экземпляр создан на текущий день.
         let instances = try await manager.fetchActiveInstances(for: template.id)
+        let expectedKey = await engine.dayKey()
         XCTAssertEqual(instances.count, 1)
-        XCTAssertEqual(instances.first?.dayKey, await engine.dayKey())
+        XCTAssertEqual(instances.first?.dayKey, expectedKey)
     }
 
     func testCreateMultipleTasks() async throws {
@@ -366,8 +368,9 @@ final class TaskManagerTests: XCTestCase {
 
         // Вчерашний должен быть удалён, сегодняшний — PENDING.
         let instances = try await manager.fetchActiveInstances(for: template.id)
+        let expectedKey = await engine.dayKey()
         XCTAssertEqual(instances.count, 1)
-        XCTAssertEqual(instances.first?.dayKey, await engine.dayKey())
+        XCTAssertEqual(instances.first?.dayKey, expectedKey)
         XCTAssertEqual(instances.first?.state, .pending)
     }
 
@@ -390,8 +393,10 @@ final class TaskManagerTests: XCTestCase {
 
         // Должен остаться ровно один экземпляр.
         let instances = try await manager.fetchActiveInstances(for: template.id)
+        let expectedKey = await engine.dayKey()
         XCTAssertEqual(instances.count, 1, "Дубликаты удалены, остался один экземпляр на день")
         XCTAssertEqual(instances.first?.state, .pending, "Состояние сброшено в pending")
+        XCTAssertEqual(instances.first?.dayKey, expectedKey)
     }
 
     func testRunDailyResetClearsSnoozePriority() async throws {
@@ -414,8 +419,9 @@ final class TaskManagerTests: XCTestCase {
 
         // Вчерашний экземпляр удалён, новый создан PENDING без snooze.
         let instances = try await manager.fetchActiveInstances(for: template.id)
+        let expectedKey = await engine.dayKey()
         XCTAssertEqual(instances.count, 1)
-        XCTAssertEqual(instances.first?.dayKey, await engine.dayKey())
+        XCTAssertEqual(instances.first?.dayKey, expectedKey)
         XCTAssertEqual(instances.first?.state, .pending)
         XCTAssertNil(instances.first?.snoozedUntil, "Snooze сгорел, не перенесся")
     }
