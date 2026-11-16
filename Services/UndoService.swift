@@ -35,12 +35,6 @@ public actor UndoService {
 
         let timer = Task<Void, Never> { [weak self] in
             guard let self else { return }
-            await self.expire()
-        }
-        self.timerTask = timer
-
-        Task { [weak self] in
-            guard let self else { return }
             do {
                 try await Task.sleep(for: .seconds(3))
             } catch {
@@ -49,6 +43,7 @@ public actor UndoService {
             guard !Task.isCancelled else { return }
             await self.expire()
         }
+        self.timerTask = timer
     }
 
     /// Попытка Undo: возвращает снимок, если он ещё доступен.

@@ -128,7 +128,8 @@ final class NotificationSchedulerTests: XCTestCase {
     }
 
     func testCompleteInstanceCancelsAllRepeats() async throws {
-        let template = try await manager.createRegular(title: "Daily", localHour: 12, localMinute: 0)
+        // Используем будущее время (23:00), чтобы fireDate гарантированно был в будущем
+        let template = try await manager.createRegular(title: "Daily", localHour: 23, localMinute: 0)
         let instance = try await manager.fetchActiveInstances(for: template.id).first!
 
         try await scheduler.reconcile()
