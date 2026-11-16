@@ -1,5 +1,5 @@
 import Foundation
-@preconcurrency import UserNotifications
+import UserNotifications
 
 /// Продакшен-адаптер над `UNUserNotificationCenter.current()`.
 public final class RealNotificationCenterAdapter: NotificationCenterAdapter {
@@ -13,8 +13,9 @@ public final class RealNotificationCenterAdapter: NotificationCenterAdapter {
         try await center.requestAuthorization(options: options)
     }
 
-    public func getNotificationSettings() async -> UNNotificationSettings {
-        await center.notificationSettings()
+    public func authorizationStatus() async -> UNAuthorizationStatus {
+        let settings = await center.notificationSettings()
+        return settings.authorizationStatus
     }
 
     public func add(_ request: UNNotificationRequest) async throws {
@@ -38,10 +39,6 @@ public final class RealNotificationCenterAdapter: NotificationCenterAdapter {
     }
 
     public func getNotificationCategories() async -> Set<UNNotificationCategory> {
-        await withCheckedContinuation { continuation in
-            center.getNotificationCategories { categories in
-                continuation.resume(returning: categories)
-            }
-        }
+        await center.getNotificationCategories()
     }
 }

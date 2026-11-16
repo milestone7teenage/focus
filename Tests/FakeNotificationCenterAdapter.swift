@@ -48,14 +48,11 @@ public final class FakeNotificationCenterAdapter: NotificationCenterAdapter {
         return status == .authorized
     }
 
-    // Return a lightweight settings struct instead of calling real UNUserNotificationCenter
-    public func getNotificationSettings() async -> UNNotificationSettings {
+    public func authorizationStatus() async -> UNAuthorizationStatus {
         lock.lock()
         let status = _authorizationStatus
         lock.unlock()
-
-        // Create a mock settings object with our controlled authorization status
-        return MockNotificationSettings(authorizationStatus: status)
+        return status
     }
 
     public func add(_ request: UNNotificationRequest) async throws {
@@ -95,23 +92,5 @@ public final class FakeNotificationCenterAdapter: NotificationCenterAdapter {
         lock.lock()
         defer { lock.unlock() }
         return _categories
-    }
-}
-
-// Mock UNNotificationSettings since it is not constructible directly.
-private final class MockNotificationSettings: UNNotificationSettings {
-    private let _authorizationStatus: UNAuthorizationStatus
-
-    init(authorizationStatus: UNAuthorizationStatus) {
-        self._authorizationStatus = authorizationStatus
-        super.init()
-    }
-
-    required init?(coder: NSCoder) {
-        fatalError("init(coder:) has not been implemented")
-    }
-
-    override var authorizationStatus: UNAuthorizationStatus {
-        _authorizationStatus
     }
 }

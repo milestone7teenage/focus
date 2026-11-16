@@ -156,8 +156,8 @@ public final class NotificationScheduler: NotificationScheduling {
 
     /// Проверка авторизации и показ предупреждения при необходимости.
     public func checkAuthorization() async -> Bool {
-        let settings = await adapter.getNotificationSettings()
-        return settings.authorizationStatus == .authorized
+        let status = await adapter.authorizationStatus()
+        return status == .authorized
     }
 
     /// Запрос разрешения на уведомления.

@@ -6,7 +6,7 @@ import UserNotifications
 /// для тестов — `FakeNotificationCenterAdapter`.
 public protocol NotificationCenterAdapter: Sendable {
     func requestAuthorization(options: UNAuthorizationOptions) async throws -> Bool
-    func getNotificationSettings() async -> UNNotificationSettings
+    func authorizationStatus() async -> UNAuthorizationStatus
     func add(_ request: UNNotificationRequest) async throws
     func removePendingNotificationRequests(withIdentifiers identifiers: [String])
     func removeAllPendingNotificationRequests()
