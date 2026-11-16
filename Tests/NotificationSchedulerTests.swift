@@ -65,7 +65,6 @@ final class NotificationSchedulerTests: XCTestCase {
 
         try await scheduler.reconcile()
 
-        let instance = try await manager.fetchActiveInstances(for: template.id).first!
         let pending = await fakeAdapter.pendingRequests()
         let taskRequests = pending.filter { $0.identifier.hasPrefix("rt_\(instance.id.uuidString)") }
         XCTAssertEqual(taskRequests.count, 4, "Должно быть 4 уведомления на цикл для регулярной задачи")
