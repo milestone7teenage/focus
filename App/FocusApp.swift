@@ -44,9 +44,6 @@ struct FocusApp: App {
             scheduler: notifScheduler
         )
 
-        // Устанавливаем делегат максимально рано через AppDelegate
-        appDelegate.setNotificationActionHandler(actionHandler)
-
         let undo = UndoService(
             lifecycle: Self.lifecycleProvider.lifecycleProvider
         )
@@ -67,6 +64,9 @@ struct FocusApp: App {
         self._notificationScheduler = State(wrappedValue: notifScheduler)
         self._notificationActionHandler = State(wrappedValue: actionHandler)
         self._lifecycleCoordinator = State(wrappedValue: coordinator)
+
+        // Устанавливаем делегат после инициализации всех stored properties
+        appDelegate.setNotificationActionHandler(actionHandler)
     }
 
     var body: some Scene {
