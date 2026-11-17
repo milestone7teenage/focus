@@ -68,7 +68,7 @@ public struct RecurringTasksView: View {
                 if viewModel.showUndoBanner {
                     UndoBanner(
                         message: "Удалено",
-                        onUndo: { viewModel.onUndo() },
+                        onUndo: { Task { await viewModel.onUndo() } },
                         onDismiss: { viewModel.onDismissUndo() }
                     )
                     .padding(.horizontal, 16)
