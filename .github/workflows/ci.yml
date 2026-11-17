@@ -45,12 +45,21 @@ jobs:
 
       - name: Build for testing
         run: |
+          set -o pipefail
           xcodebuild \
             -project focus.xcodeproj \
             -scheme focus \
             -destination "platform=iOS Simulator,id=${{ steps.select-simulator.outputs.udid }}" \
             -derivedDataPath build/DerivedData \
-            build-for-testing
+            build-for-testing 2>&1 | tee build/build-for-testing.log
+
+      - name: Upload build log (diagnostics)
+        if: always()
+        uses: actions/upload-artifact@v4
+        with:
+          name: build-log
+          path: build/build-for-testing.log
+          retention-days: 5
 
       - name: Run unit and integration tests
         run: |
@@ -59,7 +68,15 @@ jobs:
             -scheme focus \
             -destination "platform=iOS Simulator,id=${{ steps.select-simulator.outputs.udid }}" \
             -derivedDataPath build/DerivedData \
-            test-without-building
+            test-without-building 2>&1 | tee build/test.log
+
+      - name: Upload test log (diagnostics)
+        if: always()
+        uses: actions/upload-artifact@v4
+        with:
+          name: test-log
+          path: build/test.log
+          retention-days: 5
 
   build-unsigned-ipa:
     runs-on: macos-latest
@@ -79,6 +96,7 @@ jobs:
 
       - name: Archive (unsigned)
         run: |
+          set -o pipefail
           xcodebuild archive \
             -project focus.xcodeproj \
             -scheme focus \
@@ -87,7 +105,15 @@ jobs:
             -archivePath build/focus.xcarchive \
             CODE_SIGN_IDENTITY="" \
             CODE_SIGNING_REQUIRED=NO \
-            CODE_SIGNING_ALLOWED=NO
+            CODE_SIGNING_ALLOWED=NO 2>&1 | tee build/archive.log
+
+      - name: Upload archive log (diagnostics)
+        if: always()
+        uses: actions/upload-artifact@v4
+        with:
+          name: archive-log
+          path: build/archive.log
+          retention-days: 5
 
       - name: Package unsigned IPA
         run: |
