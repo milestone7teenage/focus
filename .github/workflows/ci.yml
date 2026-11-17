@@ -45,6 +45,7 @@ jobs:
 
       - name: Build for testing
         run: |
+          mkdir -p build
           set -o pipefail
           xcodebuild \
             -project focus.xcodeproj \
@@ -68,10 +69,13 @@ jobs:
             grep -E "error:" build/build-for-testing.log | head -40 | while IFS= read -r line; do
               echo "::error::$line"
             done
+          else
+            echo "::warning::build log not found"
           fi
 
       - name: Run unit and integration tests
         run: |
+          mkdir -p build
           xcodebuild \
             -project focus.xcodeproj \
             -scheme focus \
@@ -105,6 +109,7 @@ jobs:
 
       - name: Archive (unsigned)
         run: |
+          mkdir -p build
           set -o pipefail
           xcodebuild archive \
             -project focus.xcodeproj \
