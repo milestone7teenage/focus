@@ -61,6 +61,15 @@ jobs:
           path: build/build-for-testing.log
           retention-days: 5
 
+      - name: Extract compile errors as annotations
+        if: always()
+        run: |
+          if [ -f build/build-for-testing.log ]; then
+            grep -E "error:" build/build-for-testing.log | head -40 | while IFS= read -r line; do
+              echo "::error::$line"
+            done
+          fi
+
       - name: Run unit and integration tests
         run: |
           xcodebuild \
@@ -114,6 +123,15 @@ jobs:
           name: archive-log
           path: build/archive.log
           retention-days: 5
+
+      - name: Extract archive errors as annotations
+        if: always()
+        run: |
+          if [ -f build/archive.log ]; then
+            grep -E "error:" build/archive.log | head -40 | while IFS= read -r line; do
+              echo "::error::$line"
+            done
+          fi
 
       - name: Package unsigned IPA
         run: |
