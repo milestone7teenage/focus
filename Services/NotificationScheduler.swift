@@ -164,9 +164,9 @@ public final class NotificationScheduler: NotificationScheduling {
     }
 
     /// Запрос разрешения на уведомления.
-    public func requestAuthorization() async -> Bool {
+    public func requestAuthorization(options: UNAuthorizationOptions) async -> Bool {
         do {
-            let granted = try await adapter.requestAuthorization(options: [.alert, .sound, .badge])
+            let granted = try await adapter.requestAuthorization(options: options)
             if granted {
                 await registerCategory()
             }
