@@ -1,9 +1,12 @@
 import Foundation
-import UserNotifications
+@preconcurrency import UserNotifications
 
 /// Реальный планировщик уведомлений поверх `UNUserNotificationCenter`.
 /// Реализует `NotificationScheduling` (интерфейс из Этапа 2).
 public final class NotificationScheduler: NotificationScheduling {
+    public func authorizationStatus() async -> UNAuthorizationStatus {
+        await adapter.authorizationStatus()
+    }
     // MARK: - Constants
 
     /// Безопасный лимит ожидающих запросов (из 64 системных слотов).
