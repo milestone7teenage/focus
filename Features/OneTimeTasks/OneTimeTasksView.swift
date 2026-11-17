@@ -26,10 +26,10 @@ public struct OneTimeTasksView: View {
                                     subtitle: item.formattedDate,
                                     isSeen: item.isSeen,
                                     showsTomorrowBadge: item.isTomorrow,
-                                    onComplete: { viewModel.onComplete(item.id) },
-                                    onSnooze: { viewModel.onSnooze(item.id) },
-                                    onDelete: { viewModel.onDelete(item.id) },
-                                    onUndo: { viewModel.onUndo() },
+                                    onComplete: { Task { await viewModel.onComplete(item.id) } },
+                                    onSnooze: { Task { await viewModel.onSnooze(item.id) } },
+                                    onDelete: { Task { await viewModel.onDelete(item.id) } },
+                                    onUndo: { Task { await viewModel.onUndo() } },
                                     onDismissUndo: { viewModel.onDismissUndo() }
                                 )
                             )
@@ -113,9 +113,9 @@ public struct OneTimeTasksView: View {
     private var combinedEmptyState: some View {
         VStack(spacing: DesignSystem.sectionSpacing) {
             // Permission banner (only when not authorized)
-            if case .notDetermined = viewModel.notificationAuthorizationStatus {
-                permissionBanner(action: { Task { await viewModel.requestNotificationPermission() } })
-            } else if case .denied = viewModel.notificationAuthorizationStatus {
+            if viewModel.notificationAuthorizationStatus == .notDetermined {
+                permissionBanner
+            } else if viewModel.notificationAuthorizationStatus == .denied {
                 deniedBanner
             }
 

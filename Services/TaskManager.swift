@@ -1,5 +1,6 @@
 import Foundation
 import SwiftData
+import UserNotifications
 
 /// Центральный доменной сервис: CRUD, выполнение, удаление, Undo, Snooze, SEEN, календарный reset.
 /// Чистый компонент: не знает о SwiftUI и не зовёт напрямую `UNUserNotificationCenter`.
