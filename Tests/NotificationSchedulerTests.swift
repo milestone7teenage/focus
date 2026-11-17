@@ -1,6 +1,7 @@
 import Foundation
 import SwiftData
 import XCTest
+import UserNotifications
 @testable import focus
 
 @MainActor
