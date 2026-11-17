@@ -1,4 +1,5 @@
 import SwiftUI
+import UserNotifications
 
 /// Экран вкладки «Разовые» задачи.
 public struct OneTimeTasksView: View {

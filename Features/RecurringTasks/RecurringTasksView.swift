@@ -1,4 +1,5 @@
 import SwiftUI
+import UserNotifications
 
 /// Экран вкладки «Регулярные» задачи.
 public struct RecurringTasksView: View {
