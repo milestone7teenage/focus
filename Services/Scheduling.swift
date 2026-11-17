@@ -56,7 +56,7 @@ public actor InMemoryNotificationScheduler: NotificationScheduling {
     }
 
     public func requestAuthorization(options: UNAuthorizationOptions) async -> Bool {
-        .authorized
+        true
     }
 
     public func authorizationStatus() async -> UNAuthorizationStatus {
