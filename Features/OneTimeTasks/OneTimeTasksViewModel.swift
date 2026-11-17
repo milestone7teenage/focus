@@ -1,6 +1,7 @@
 import Foundation
 import SwiftUI
 import Combine
+import UserNotifications
 
 /// ViewModel для вкладки «Разовые» задачи.
 @MainActor
