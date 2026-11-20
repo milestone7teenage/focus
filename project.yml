@@ -1,10 +1,5 @@
 name: focus
 
-# Temporary placeholder Bundle IDs for Stage 1 scaffold.
-# Final IDs will be set when the real App Store / development team is configured.
-# Application target: com.placeholder.focus
-# Test target:        com.placeholder.focusTests
-
 options:
   bundleIdPrefix: com.placeholder
   deploymentTarget:
@@ -62,7 +57,7 @@ targets:
           - DesignSystem.swift
     settings:
       base:
-        PRODUCT_BUNDLE_IDENTIFIER: com.placeholder.focus
+        PRODUCT_BUNDLE_IDENTIFIER: app.teal5991.labradorite7249
         MARKETING_VERSION: "1.0"
         CURRENT_PROJECT_VERSION: "1"
         SWIFT_VERSION: "5.9"
@@ -92,7 +87,7 @@ targets:
       - target: focus
     settings:
       base:
-        PRODUCT_BUNDLE_IDENTIFIER: com.placeholder.focusTests
+        PRODUCT_BUNDLE_IDENTIFIER: app.teal5991.labradorite7249.tests
         SWIFT_VERSION: "5.9"
         GENERATE_INFOPLIST_FILE: YES
         CODE_SIGN_IDENTITY: "-"
