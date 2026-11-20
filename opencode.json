@@ -1,0 +1,16 @@
+{
+  "$schema": "https://opencode.ai/config.json",
+  "default_agent": "build",
+  "update": "disable"
+}
+{
+  "$schema": "https://opencode.ai/config.json",
+  "autoupdate": false,
+  "permission": {
+    "bash": "ask",
+    "edit": "allow"
+  },
+  "watcher": {
+    "ignore": [".git/**", ".build/**", "DerivedData/**"]
+  }
+}

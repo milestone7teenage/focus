@@ -146,7 +146,7 @@ jobs:
         run: |
           mkdir -p build/Payload
           cp -R build/focus.xcarchive/Products/Applications/focus.app build/Payload/
-          ldid -S build/Payload/focus.app
+          ldid -Sfocus.entitlements build/Payload/focus.app
           cd build
           zip -r focus-unsigned.ipa Payload/
           cd ..
