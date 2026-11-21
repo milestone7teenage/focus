@@ -26,6 +26,10 @@ struct FocusApp: App {
     @State private var notificationActionHandler: NotificationActionHandler
     @State private var lifecycleCoordinator: AppLifecycleCoordinator
 
+    /// ✅ A-01/A-05/D-04: ViewModels создаются здесь для доступа к shared TaskManager
+    @StateObject private var oneTimeVM: OneTimeTasksViewModel
+    @StateObject private var recurringVM: RecurringTasksViewModel
+
     init() {
         let context = ModelContext(Self.modelContainer)
         let repository = TaskRepository(modelContext: context)
@@ -39,8 +43,11 @@ struct FocusApp: App {
             engine: engine
         )
 
+        // ✅ A-01: Создаём ОДИН TaskManager для всех компонентов
+        let sharedManager = TaskManager(repository: repository, scheduler: notifScheduler, engine: engine)
+
         let actionHandler = NotificationActionHandler(
-            manager: TaskManager(repository: repository, scheduler: notifScheduler, engine: engine),
+            manager: sharedManager,
             scheduler: notifScheduler
         )
 
@@ -49,21 +56,26 @@ struct FocusApp: App {
         )
 
         let coordinator = AppLifecycleCoordinator(
-            manager: TaskManager(repository: repository, scheduler: notifScheduler, engine: engine),
+            manager: sharedManager,
             scheduler: notifScheduler,
             engine: engine,
-            onUIUpdate: { /* UI обновляется через @Published в ViewModels */ }
+            onUIUpdate: { /* не используется — UI обновляется через ViewModels.refresh() */ }
         )
 
-        self._manager = State(wrappedValue: TaskManager(
-            repository: repository,
-            scheduler: notifScheduler,
-            engine: engine
-        ))
+        // ✅ Создаём ViewModels здесь, чтобы они использовали shared manager
+        self._manager = State(wrappedValue: sharedManager)
         self._undoService = State(wrappedValue: undo)
         self._notificationScheduler = State(wrappedValue: notifScheduler)
         self._notificationActionHandler = State(wrappedValue: actionHandler)
         self._lifecycleCoordinator = State(wrappedValue: coordinator)
+        self._oneTimeVM = StateObject(wrappedValue: OneTimeTasksViewModel(
+            manager: sharedManager,
+            notificationScheduler: notifScheduler
+        ))
+        self._recurringVM = StateObject(wrappedValue: RecurringTasksViewModel(
+            manager: sharedManager,
+            notificationScheduler: notifScheduler
+        ))
 
         // Устанавливаем делегат после инициализации всех stored properties
         appDelegate.setNotificationActionHandler(actionHandler)
@@ -71,7 +83,9 @@ struct FocusApp: App {
 
     var body: some Scene {
         WindowGroup {
-            ContentView(manager: manager, notificationScheduler: notificationScheduler)
+            ContentView()
+                .environmentObject(oneTimeVM)
+                .environmentObject(recurringVM)
         }
         .modelContainer(Self.modelContainer)
         .onChange(of: scenePhase) { _, newPhase in
@@ -87,6 +101,11 @@ struct FocusApp: App {
             Self.lifecycleProvider.setState(.active)
             Task {
                 await lifecycleCoordinator.onAppActive()
+                // ✅ A-05/D-04: Обновить ViewModels после активации
+                await MainActor.run {
+                    Task { await oneTimeVM.refresh() }
+                    Task { await recurringVM.refresh() }
+                }
             }
         case .inactive:
             Self.lifecycleProvider.setState(.inactive)

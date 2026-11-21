@@ -99,6 +99,11 @@ public final class OneTimeTasksViewModel: ObservableObject {
         await updateNotificationStatus()
     }
 
+    /// ✅ D-04: Вызывается при возврате из background для обновления данных
+    public func refresh() async {
+        await load()
+    }
+
     private func updateNotificationStatus() async {
         let status = await notificationScheduler.authorizationStatus()
         await MainActor.run {
