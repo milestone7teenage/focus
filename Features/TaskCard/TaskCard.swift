@@ -48,7 +48,6 @@ public struct TaskCard: View {
     @State private var isPressing = false
     @State private var pressTask: Swift.Task<Void, Never>?
     @State private var dragOffset: CGSize = .zero
-    @State private var showUndo = false
     @State private var isCompleting = false
 
     // MARK: - Body
@@ -75,22 +74,6 @@ public struct TaskCard: View {
                         .animation(.linear(duration: DesignSystem.longPressDuration), value: progress)
                 }
                 .allowsHitTesting(false)
-            }
-
-            // Undo banner (swipe left)
-            if showUndo {
-                UndoBanner(
-                    message: "Удалено",
-                    onUndo: {
-                        configuration.onUndo()
-                        showUndo = false
-                    },
-                    onDismiss: {
-                        configuration.onDismissUndo()
-                        showUndo = false
-                    }
-                )
-                .transition(.move(edge: .bottom).combined(with: .opacity))
             }
         }
         .frame(maxWidth: .infinity, alignment: .leading)
@@ -259,8 +242,6 @@ public struct TaskCard: View {
     // MARK: - Swipe handling (Snooze right, Delete left)
 
     private func handleSwipeChanged(_ value: DragGesture.Value) {
-        if showUndo { return }
-
         let translation = value.translation.width
         // Порог для свайпа
         if abs(translation) > 50 {
@@ -287,9 +268,6 @@ public struct TaskCard: View {
 
     private func triggerDelete() {
         configuration.onDelete()
-        withAnimation(.spring(response: 0.3, dampingFraction: 0.8)) {
-            showUndo = true
-        }
     }
 
     private func triggerSnooze() {

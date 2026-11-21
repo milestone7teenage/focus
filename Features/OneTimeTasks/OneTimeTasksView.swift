@@ -89,6 +89,7 @@ public struct OneTimeTasksView: View {
                             await viewModel.load()
                         }
                     }
+                    viewModel.showCreateSheet = false
                 },
                 onSaveRegular: { _ in },
                 onCancel: { viewModel.showCreateSheet = false }

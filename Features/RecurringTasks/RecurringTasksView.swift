@@ -89,6 +89,7 @@ public struct RecurringTasksView: View {
                             await viewModel.load()
                         }
                     }
+                    viewModel.showCreateSheet = false
                 },
                 onCancel: { viewModel.showCreateSheet = false }
             )
