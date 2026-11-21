@@ -71,13 +71,14 @@ public final class RecurringTasksViewModel: ObservableObject {
                 try await manager.snoozeInstance(id: instance.id)
             }
             await load()
+            try await notificationScheduler.reconcile()
         } catch { }
     }
 
     public func onDelete(_ id: UUID) async {
         do {
             if let snapshot = try await manager.deleteRegular(id: id) {
-                undoService.store(snapshot: snapshot)
+                await undoService.store(snapshot: snapshot)
                 withAnimation(.spring(response: 0.3, dampingFraction: 0.8)) {
                     showUndoBanner = true
                 }
@@ -87,7 +88,7 @@ public final class RecurringTasksViewModel: ObservableObject {
     }
 
     public func onUndo() async {
-        guard let snapshot = undoService.undo() else { return }
+        guard let snapshot = await undoService.undo() else { return }
         do {
             try await manager.restore(snapshot: snapshot)
             withAnimation(.spring(response: 0.3, dampingFraction: 0.8)) {
@@ -98,7 +99,7 @@ public final class RecurringTasksViewModel: ObservableObject {
     }
 
     public func onDismissUndo() {
-        undoService.cancel()
+        Task { await undoService.cancel() }
         withAnimation(.spring(response: 0.3, dampingFraction: 0.8)) {
             showUndoBanner = false
         }
