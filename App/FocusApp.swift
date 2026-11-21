@@ -70,11 +70,13 @@ struct FocusApp: App {
         self._lifecycleCoordinator = State(wrappedValue: coordinator)
         self._oneTimeVM = StateObject(wrappedValue: OneTimeTasksViewModel(
             manager: sharedManager,
-            notificationScheduler: notifScheduler
+            notificationScheduler: notifScheduler,
+            undoService: undo
         ))
         self._recurringVM = StateObject(wrappedValue: RecurringTasksViewModel(
             manager: sharedManager,
-            notificationScheduler: notifScheduler
+            notificationScheduler: notifScheduler,
+            undoService: undo
         ))
 
         // Устанавливаем делегат после инициализации всех stored properties

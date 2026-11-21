@@ -193,6 +193,7 @@ public final class TaskManager: Sendable {
         task.notificationGeneration += 1
         task.state = .pending
         try await repository.updateOneTime(task)
+        try await scheduler.reconcile()
     }
 
     /// Snooze регулярной задачи: изменяется только текущий дневной экземпляр (`snoozedUntil`).
@@ -202,6 +203,7 @@ public final class TaskManager: Sendable {
         instance.notificationGeneration += 1
         instance.state = .pending
         try await repository.save()
+        try await scheduler.reconcile()
     }
 
     // MARK: - SEEN

@@ -48,16 +48,14 @@ public final class NotificationActionHandler: NSObject, UNUserNotificationCenter
 
         let actionIdentifier = response.actionIdentifier
 
-        // Игнорируем системные действия (dismiss, открытие приложения без действия)
-        if actionIdentifier == UNNotificationDismissActionIdentifier ||
-           actionIdentifier == UNNotificationDefaultActionIdentifier && response.actionIdentifier != "SEEN_ACTION" {
-            // Нажатие на тело уведомления — тоже SEEN
-            await processSeen(idString: idString, generation: generation)
+        // При dismiss — сразу выходим, задача не меняется
+        if actionIdentifier == UNNotificationDismissActionIdentifier {
             return
         }
 
-        // Кнопка «Увидел»
-        if actionIdentifier == "SEEN_ACTION" {
+        // Нажатие на тело уведомления и кнопка «Увидел» — переводим в SEEN
+        if actionIdentifier == UNNotificationDefaultActionIdentifier ||
+           actionIdentifier == "SEEN_ACTION" {
             await processSeen(idString: idString, generation: generation)
         }
     }

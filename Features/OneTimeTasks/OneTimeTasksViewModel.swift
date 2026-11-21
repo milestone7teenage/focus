@@ -13,13 +13,12 @@ public final class OneTimeTasksViewModel: ObservableObject {
 
     public let manager: TaskManager
     public let notificationScheduler: NotificationScheduler
+    public let undoService: UndoService
 
-    private var undoSnapshot: TaskSnapshot?
-    private var undoItem: OneTimeTaskItem?
-
-    public init(manager: TaskManager, notificationScheduler: NotificationScheduler) {
+    public init(manager: TaskManager, notificationScheduler: NotificationScheduler, undoService: UndoService) {
         self.manager = manager
         self.notificationScheduler = notificationScheduler
+        self.undoService = undoService
     }
 
     public func load() async {
@@ -56,8 +55,7 @@ public final class OneTimeTasksViewModel: ObservableObject {
     public func onDelete(_ id: UUID) async {
         do {
             if let snapshot = try await manager.deleteOneTime(id: id) {
-                undoSnapshot = snapshot
-                undoItem = tasks.first { $0.id == id }
+                undoService.store(snapshot: snapshot)
                 withAnimation(.spring(response: 0.3, dampingFraction: 0.8)) {
                     showUndoBanner = true
                 }
@@ -67,11 +65,9 @@ public final class OneTimeTasksViewModel: ObservableObject {
     }
 
     public func onUndo() async {
-        guard let snapshot = undoSnapshot else { return }
+        guard let snapshot = undoService.undo() else { return }
         do {
             try await manager.restore(snapshot: snapshot)
-            undoSnapshot = nil
-            undoItem = nil
             withAnimation(.spring(response: 0.3, dampingFraction: 0.8)) {
                 showUndoBanner = false
             }
@@ -80,8 +76,7 @@ public final class OneTimeTasksViewModel: ObservableObject {
     }
 
     public func onDismissUndo() {
-        undoSnapshot = nil
-        undoItem = nil
+        undoService.cancel()
         withAnimation(.spring(response: 0.3, dampingFraction: 0.8)) {
             showUndoBanner = false
         }
