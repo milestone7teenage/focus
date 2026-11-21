@@ -64,6 +64,8 @@ public struct TaskCard: View {
             // Content
             cardContent
                 .opacity(configuration.isSeen ? 0.6 : 1.0)
+                .offset(x: dragOffset.width)
+                .animation(.spring(response: 0.3, dampingFraction: 0.8), value: dragOffset)
 
             // Progress fill on long press
             if isPressing && progress > 0 {

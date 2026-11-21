@@ -45,26 +45,7 @@ public struct OneTimeTasksView: View {
                 .listStyle(.plain)
                 .scrollContentBackground(.hidden)
                 .background(DesignSystem.background)
-
-                // Floating Add Button
-                VStack {
-                    Spacer()
-                    HStack {
-                        Spacer()
-                        Button(action: { viewModel.onAdd() }) {
-                            Image(systemName: "plus")
-                                .font(.system(size: 22, weight: .medium))
-                                .foregroundStyle(DesignSystem.primaryText)
-                                .frame(width: 56, height: 56)
-                                .background(DesignSystem.cardBackground)
-                                .clipShape(Circle())
-                                .shadow(color: .black.opacity(0.1), radius: 4, x: 0, y: 2)
-                        }
-                        .accessibilityLabel("Добавить разовую задачу")
-                        .padding(.trailing, 20)
-                        .padding(.bottom, 20)
-                    }
-                }
+                .safeAreaPadding(.bottom, 100)
 
                 // Undo Banner
                 if viewModel.showUndoBanner {
@@ -74,7 +55,7 @@ public struct OneTimeTasksView: View {
                         onDismiss: { viewModel.onDismissUndo() }
                     )
                     .padding(.horizontal, 16)
-                    .padding(.bottom, 90)
+                    .padding(.bottom, 100)
                     .transition(.move(edge: .bottom).combined(with: .opacity))
                 }
             }
@@ -132,7 +113,7 @@ public struct OneTimeTasksView: View {
                         .font(.title3.weight(.medium))
                         .foregroundStyle(DesignSystem.primaryText)
 
-                    Text("Нажмите «+», чтобы создать напоминание на конкретную дату и время.")
+                    Text("Нажмите «+» внизу, чтобы создать напоминание на конкретную дату и время.")
                         .font(DesignSystem.taskMetaFont)
                         .foregroundStyle(DesignSystem.secondaryText)
                         .multilineTextAlignment(.center)

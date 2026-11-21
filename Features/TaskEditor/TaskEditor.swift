@@ -82,79 +82,96 @@ public struct TaskEditor: View {
 
     public var body: some View {
         NavigationStack {
-            Form {
-                Section {
-                    TextField("Название", text: $title, axis: .vertical)
-                        .font(DesignSystem.taskTitleFont)
-                        .focused($isTitleFocused)
-                        .lineLimit(3...6)
-                        .textInputAutocapitalization(.sentences)
-                } header: {
-                    Text("Название")
-                        .font(DesignSystem.taskMetaFont)
-                        .foregroundStyle(DesignSystem.secondaryText)
+            VStack(spacing: 0) {
+                ScrollView {
+                    VStack(alignment: .leading, spacing: 0) {
+                        Section {
+                            TextField("Название", text: $title, axis: .vertical)
+                                .font(DesignSystem.taskTitleFont)
+                                .focused($isTitleFocused)
+                                .lineLimit(3...6)
+                                .textInputAutocapitalization(.sentences)
+                        } header: {
+                            Text("Название")
+                                .font(DesignSystem.taskMetaFont)
+                                .foregroundStyle(DesignSystem.secondaryText)
+                        }
+
+                        if isOneTime {
+                            Section {
+                                DatePicker(
+                                    "Дата и время",
+                                    selection: $scheduledAt,
+                                    in: CalendarPolicy.minimumOneTimeDate()...,
+                                    displayedComponents: [.date, .hourAndMinute]
+                                )
+                                .datePickerStyle(.compact)
+                                .environment(\.locale, Locale.current)
+                            } header: {
+                                Text("Когда напомнить")
+                                    .font(DesignSystem.taskMetaFont)
+                                    .foregroundStyle(DesignSystem.secondaryText)
+                            }
+                        } else {
+                            Section {
+                                DatePicker(
+                                    "Время",
+                                    selection: Binding(
+                                        get: { dateFromComponents(hour: localHour, minute: localMinute) },
+                                        set: { newDate in
+                                            let comps = Calendar.current.dateComponents([.hour, .minute], from: newDate)
+                                            localHour = comps.hour ?? 9
+                                            localMinute = comps.minute ?? 0
+                                        }
+                                    ),
+                                    displayedComponents: .hourAndMinute
+                                )
+                                .datePickerStyle(.wheel)
+                                .environment(\.locale, Locale.current)
+                            } header: {
+                                Text("Ежедневно в")
+                                    .font(DesignSystem.taskMetaFont)
+                                    .foregroundStyle(DesignSystem.secondaryText)
+                            }
+                        }
+                    }
+                    .formStyle(.grouped)
+                    .scrollContentBackground(.hidden)
                 }
 
-                if isOneTime {
-                    Section {
-                        DatePicker(
-                            "Дата и время",
-                            selection: $scheduledAt,
-                            in: CalendarPolicy.minimumOneTimeDate()...,
-                            displayedComponents: [.date, .hourAndMinute]
-                        )
-                        .datePickerStyle(.compact)
-                        .environment(\.locale, Locale.current)
-                    } header: {
-                        Text("Когда напомнить")
-                            .font(DesignSystem.taskMetaFont)
-                            .foregroundStyle(DesignSystem.secondaryText)
+                // Закреплённая панель кнопок (доступна всегда)
+                VStack {
+                    Divider()
+                    HStack {
+                        Button("Отмена", action: onCancel)
+                            .font(DesignSystem.buttonFont)
+                            .foregroundStyle(DesignSystem.primaryText)
+                            .frame(maxWidth: .infinity)
+
+                        Button("Сохранить") {
+                            if isOneTime {
+                                onSave(OneTimeTaskDraft(title: title.trimmingCharacters(in: .whitespacesAndNewlines), scheduledAt: scheduledAt))
+                            } else {
+                                onSaveRegular(RegularTaskDraft(title: title.trimmingCharacters(in: .whitespacesAndNewlines), localHour: localHour, localMinute: localMinute))
+                            }
+                        }
+                        .font(DesignSystem.buttonFont)
+                        .foregroundStyle(canSave ? DesignSystem.primaryText : DesignSystem.secondaryText)
+                        .frame(maxWidth: .infinity)
+                        .disabled(!canSave)
                     }
-                } else {
-                    Section {
-                        DatePicker(
-                            "Время",
-                            selection: Binding(
-                                get: { dateFromComponents(hour: localHour, minute: localMinute) },
-                                set: { newDate in
-                                    let comps = Calendar.current.dateComponents([.hour, .minute], from: newDate)
-                                    localHour = comps.hour ?? 9
-                                    localMinute = comps.minute ?? 0
-                                }
-                            ),
-                            displayedComponents: .hourAndMinute
-                        )
-                        .datePickerStyle(.wheel)
-                        .environment(\.locale, Locale.current)
-                    } header: {
-                        Text("Ежедневно в")
-                            .font(DesignSystem.taskMetaFont)
-                            .foregroundStyle(DesignSystem.secondaryText)
-                    }
+                    .padding(.horizontal, 16)
+                    .padding(.vertical, 12)
+                    .background(DesignSystem.cardBackground)
                 }
             }
             .navigationTitle(isOneTime ? "Разовая задача" : "Регулярная задача")
             .navigationBarTitleDisplayMode(.inline)
-            .toolbar {
-                ToolbarItem(placement: .cancellationAction) {
-                    Button("Отмена", action: onCancel)
-                }
-                ToolbarItem(placement: .confirmationAction) {
-                    Button("Сохранить") {
-                        if isOneTime {
-                            onSave(OneTimeTaskDraft(title: title.trimmingCharacters(in: .whitespacesAndNewlines), scheduledAt: scheduledAt))
-                        } else {
-                            onSaveRegular(RegularTaskDraft(title: title.trimmingCharacters(in: .whitespacesAndNewlines), localHour: localHour, localMinute: localMinute))
-                        }
-                    }
-                    .disabled(!canSave)
-                }
-            }
             .onAppear {
                 isTitleFocused = true
             }
         }
-        .presentationDetents([.medium, .large])
+        .presentationDetents([.large])
         .presentationDragIndicator(.visible)
     }
 
